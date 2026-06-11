@@ -1,0 +1,71 @@
+[
+  {
+    "id": "E1", "tier": "easy",
+    "question": "How many orders were placed in 2025?",
+    "question_zh": "2025年总共有多少订单?",
+    "gold_sql": "SELECT count(*) AS orders_2025 FROM orders WHERE order_purchase_timestamp >= '2025-01-01' AND order_purchase_timestamp < '2026-01-01'"
+  },
+  {
+    "id": "E2", "tier": "easy",
+    "question": "What is the overall average review score?",
+    "question_zh": "整体平均评分是多少?",
+    "gold_sql": "SELECT round(avg(review_score), 3) AS avg_score FROM order_reviews"
+  },
+  {
+    "id": "E3", "tier": "easy",
+    "question": "How many orders are there in each order status?",
+    "question_zh": "各订单状态分别有多少订单?",
+    "gold_sql": "SELECT order_status, count(*) AS n_orders FROM orders GROUP BY order_status ORDER BY n_orders DESC"
+  },
+  {
+    "id": "E4", "tier": "easy",
+    "question": "How many distinct product categories are there?",
+    "question_zh": "一共有多少个商品品类?",
+    "gold_sql": "SELECT count(DISTINCT product_category_name) AS n_categories FROM products"
+  },
+  {
+    "id": "M1", "tier": "medium",
+    "question": "What is the monthly GMV trend in 2025?",
+    "question_zh": "2025年每个月的GMV趋势是怎样的?",
+    "gold_sql": "SELECT date_trunc('month', o.order_purchase_timestamp) AS month, round(sum(oi.price + oi.freight_value), 2) AS gmv FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.order_status <> 'canceled' AND o.order_purchase_timestamp >= '2025-01-01' AND o.order_purchase_timestamp < '2026-01-01' GROUP BY 1 ORDER BY 1"
+  },
+  {
+    "id": "M2", "tier": "medium",
+    "question": "Which are the top 5 product categories by revenue?",
+    "question_zh": "收入最高的前5个商品品类是哪些?",
+    "gold_sql": "SELECT p.product_category_name, round(sum(oi.price), 2) AS revenue FROM order_items oi JOIN products p ON oi.product_id = p.product_id JOIN orders o ON oi.order_id = o.order_id WHERE o.order_status <> 'canceled' GROUP BY 1 ORDER BY revenue DESC LIMIT 5"
+  },
+  {
+    "id": "M3", "tier": "medium",
+    "question": "What is the average delivery time in days for each customer state?",
+    "question_zh": "各州的平均配送时长(天)是多少?",
+    "gold_sql": "SELECT c.customer_state, round(avg(date_diff('day', o.order_purchase_timestamp, o.order_delivered_customer_date)), 2) AS avg_delivery_days FROM orders o JOIN customers c ON o.customer_id = c.customer_id WHERE o.order_status = 'delivered' GROUP BY 1 ORDER BY avg_delivery_days DESC"
+  },
+  {
+    "id": "M4", "tier": "medium",
+    "question": "What is the total payment value by payment type?",
+    "question_zh": "各支付方式的支付总金额是多少?",
+    "gold_sql": "SELECT payment_type, round(sum(payment_value), 2) AS total_value FROM order_payments GROUP BY payment_type ORDER BY total_value DESC"
+  },
+  {
+    "id": "H1", "tier": "hard",
+    "question": "What is the repeat purchase rate across all time, expressed as a fraction (e.g. 0.28)? Return the rate only.",
+    "question_zh": "全时段的复购率是多少?用小数表示(如0.28),只返回这个比率。",
+    "gold_sql": "SELECT round(avg(CASE WHEN n_orders >= 2 THEN 1.0 ELSE 0.0 END), 4) AS repeat_rate FROM (SELECT c.customer_unique_id, count(DISTINCT o.order_id) AS n_orders FROM orders o JOIN customers c ON o.customer_id = c.customer_id GROUP BY 1)"
+  },
+  {
+    "id": "H2", "tier": "hard",
+    "question": "What is the average review score for late vs on-time deliveries? Return exactly two rows labeled 'late' and 'on_time', with columns delivery and avg_score only.",
+    "question_zh": "延迟交付和按时交付的订单平均评分分别是多少?只返回两行,标签用'late'和'on_time',只含delivery和avg_score两列。",
+    "gold_sql": "SELECT CASE WHEN o.order_delivered_customer_date > o.order_estimated_delivery_date THEN 'late' ELSE 'on_time' END AS delivery, round(avg(r.review_score), 3) AS avg_score FROM orders o JOIN order_reviews r ON o.order_id = r.order_id WHERE o.order_status = 'delivered' GROUP BY 1 ORDER BY 1"
+  },
+  {
+    "id": "H3", "tier": "hard",
+    "question": "What is the average order value (AOV) by quarter in 2025?",
+    "question_zh": "2025年每个季度的客单价(AOV)是多少?",
+    "gold_sql": "SELECT date_trunc('quarter', o.order_purchase_timestamp) AS quarter, round(sum(oi.price + oi.freight_value) / count(DISTINCT o.order_id), 2) AS aov FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.order_status <> 'canceled' AND o.order_purchase_timestamp >= '2025-01-01' AND o.order_purchase_timestamp < '2026-01-01' GROUP BY 1 ORDER BY 1"
+  },
+  {
+    "id": "H4", "tier": "hard",
+    "question": "Which 3 customer states have the highest late delivery rate, considering only states with at least 100 delivered orders? Express the rate as a fraction rounded to 4 decimal places, and return state and rate only.",
+    "question_zh": "在至少有100个已交付订单的州中,延迟交

@@ -1,0 +1,10 @@
+duckdb>=1.0
+pandas>=2.0
+numpy>=1.26
+openai>=1.40
+anthropic>=0.34
+chromadb>=0.5
+streamlit>=1.36
+plotly>=5.20
+python-dotenv>=1.0
+tabulate>=0.9
