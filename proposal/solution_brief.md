@@ -15,17 +15,17 @@ A text-to-SQL analytics assistant grounded in a **governed semantic layer** (met
 
 ## 3. Model selection (benchmark-driven)
 
-| Option | Exec. accuracy* | Avg latency | Cost / 1k queries | Best for |
-|---|---|---|---|---|
-| glm-4-air | 100% | 2.8–5.3s | $0.1 | lowest cost; CN compliance |
-| gpt-4o-mini | 100% | 2.3–3.4s | $0.2 | default international tier |
-| deepseek-chat | 100% | ~1.8s | $0.3 | CN API, low latency |
-| gpt-4o | 100% | ~1.7s | $2.8 | not justified at this task difficulty |
-| qwen3.6 @ Ollama (self-hosted) | 100% | ~12.7s | ~$0 API (GPU box: [$..]/mo) | data cannot leave premises |
+| Option | Exec. accuracy* | Hard tier | Avg latency | Cost / 1k queries | Best for |
+|---|---|---|---|---|---|
+| deepseek-chat | 97.5% | 94% | ~1.6s | $0.3 | **recommended default** |
+| qwen3.6 @ Ollama (self-hosted) | 95% | 89% | ~12.5s | ~$0 API (GPU box: [$..]/mo) | data cannot leave premises |
+| gpt-4o | 90% | 83% | ~1.8s | $3.3 | not justified: 10× cost, lower accuracy |
+| glm-4-air | 85% | 78% | ~5.0s | $0.1 | budget tier for simple-query workloads |
+| gpt-4o-mini | 72.5% | 67% | ~3.0s | $0.2 | not recommended for analytics SQL |
 
-*12-question tiered benchmark (easy/medium/hard) on the project warehouse, single run, temperature 0. The set is saturated at current difficulty — differentiation is driven by cost, latency, and deployment form; a 40-question harder set is on the roadmap.
+*40-question tiered benchmark (8 easy / 14 medium / 18 hard: window functions, cohort/retention, percentiles, multi-CTE) on the project warehouse, single run, temperature 0. Every failure manually attributed; raw accuracy shown (~1/3 of failures were matching artifacts, which would lift gpt-4o/glm/gpt-4o-mini by ~3–8pp).
 
-**Recommendation**: with semantic-layer governance + a self-correction loop, budget models match the flagship — deploy glm-4-air (CN) or gpt-4o-mini (international) as default, a **28× cost saving vs gpt-4o with no measured accuracy loss**. Offer self-hosted qwen3.6 as the private-deployment tier: zero data egress, trading ~6× latency.
+**Recommendation**: deploy **deepseek-chat as default** — top accuracy at 1/10th the flagship's cost. On easy/medium queries all five options scored at or near 100% (and all scored 100% on the v1 12-question set), so simple-query workloads can route to the cheapest tier. Offer **self-hosted qwen3.6** as the private-deployment tier: near-leader accuracy (95%), zero data egress, trading ~6× latency. Flagship APIs are not worth the premium for this workload.
 
 ## 4. ROI estimate
 

@@ -10,7 +10,7 @@
 **InsightPilot — LLM-Powered Self-Service Data Analyst** | Python, DuckDB, RAG (Chroma), Streamlit | [GitHub link]
 
 - Built an end-to-end AI data analyst over a 7-table e-commerce warehouse: LLM intent routing, a RAG semantic layer enforcing governed metric definitions, text-to-SQL with a SELECT-only guard and execution-feedback self-correction loop, and automatic chart + insight generation.
-- Designed a tiered text-to-SQL benchmark (execution accuracy / latency / cost) across 5 deployment options (GPT-4o, GPT-4o-mini, DeepSeek, GLM, self-hosted Qwen via Ollama); diagnosed and eliminated false-negative result matching, bringing all models to 100% on the question set and exposing a 28× cost spread ($0.1–$2.8 per 1k queries) with no accuracy difference.
+- Designed a 40-question tiered text-to-SQL benchmark (execution accuracy / latency / cost; window functions, cohort/retention, percentiles) across 5 deployment options (GPT-4o, GPT-4o-mini, DeepSeek, GLM, self-hosted Qwen via Ollama); manually attributed every failure to separate model errors from matching artifacts, revealing the flagship GPT-4o (90%) beaten by DeepSeek (97.5%) at 1/10th the cost, and a self-hosted model reaching 95% — reshaping the deployment recommendation.
 - Demonstrated semantic-layer governance ROI: seeding a reference SQL template for a commonly mis-calibrated metric (repeat purchase rate) lifted a budget model from 3 failed attempts to first-pass correct — enabling low-cost model deployment at scale.
 - Instrumented per-call observability (tokens, latency, cost) with an ops dashboard, and authored a one-page client solution brief covering model selection, ROI estimate, rollout plan, and risk mitigations.
 
@@ -19,7 +19,7 @@
 **InsightPilot — 企业级 AI 数据分析助手(LLM + 语义层治理)** | Python, DuckDB, RAG (Chroma), Streamlit | [GitHub 链接]
 
 - 基于 7 表电商数仓搭建端到端 AI 取数助手:LLM 意图路由 + RAG 语义层(统一指标口径)+ Text-to-SQL(只读防护、执行报错回喂的自我修正循环)+ 自动图表与业务洞察生成。
-- 设计分层 Text-to-SQL 评测(执行准确率/延迟/成本),横向对比 5 种部署方案(GPT-4o、GPT-4o-mini、DeepSeek、GLM、Ollama 本地 Qwen);定位并修复评测假阴性后,全部模型达到 100% 准确率,揭示 28 倍成本价差下无准确率差异,支撑"便宜模型 + 系统治理"的选型结论。
+- 设计 40 题分层 Text-to-SQL 评测(执行准确率/延迟/成本,覆盖窗口函数、留存分析、分位数等),横向对比 5 种部署方案(GPT-4o、GPT-4o-mini、DeepSeek、GLM、Ollama 本地 Qwen);对全部失败逐条归因、区分模型真错与匹配误判,发现旗舰 GPT-4o(90%)被 1/10 价格的 DeepSeek(97.5%)反超、本地私有化模型达 95%,据此重构选型建议。
 - 验证语义层治理价值:将易错口径(复购率)的参考 SQL 沉淀进指标字典,使低价模型从 3 次尝试全败提升为一次通过,显著降低规模化部署成本。
 - 实现全链路可观测(逐调用 token/延迟/成本看板),并产出一页纸客户方案书(选型对比、ROI 测算、实施路径、风险对策)。
 

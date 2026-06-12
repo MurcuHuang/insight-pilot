@@ -59,17 +59,21 @@ Outputs per-model **execution accuracy (by difficulty tier), avg latency, cost p
 
 Result matching is approximate (value-multiset comparison, numerics rounded to 2dp) — manually review FAIL rows before quoting numbers.
 
-### Benchmark results (12-question tiered set, synthetic warehouse)
+### Benchmark results (v2: 40-question set — 8 easy / 14 medium / 18 hard)
 
-| Model | Exec. accuracy | Avg latency | Cost / 1k queries |
-|---|---|---|---|
-| glm-4-air | 100% | 2.8–5.3s | $0.1 |
-| gpt-4o-mini | 100% | 2.3–3.4s | $0.2 |
-| deepseek-chat | 100% | ~1.8s | $0.3 |
-| gpt-4o | 100% | ~1.7s | $2.8 |
-| qwen3.6 @ Ollama (self-hosted) | 100% | ~12.7s | ~$0 API |
+The v2 set adds window functions, cohort/retention analysis, percentiles, and multi-CTE composites. Every FAIL was manually attributed: of 24 failures, ~16 were genuine model errors and ~8 were matching artifacts / question ambiguities (e.g., timestamp vs integer year, percentile interpolation method).
 
-**Takeaway**: with semantic-layer governance + a self-correction loop, budget models match the flagship — a 28× cost spread with no measured accuracy difference. The self-hosted option trades ~6× latency for zero data egress. The set is saturated at current difficulty; a harder 40-question set is on the roadmap. Notable finding along the way: seeding a reference SQL template into the metrics dictionary lifted glm-4-air on the trickiest metric (repeat purchase rate) from 3 failed attempts to first-pass correct.
+| Model | Raw accuracy | Adj. accuracy* | Hard tier | Avg latency | Cost / 1k queries |
+|---|---|---|---|---|---|
+| deepseek-chat | 97.5% | 97.5% | 94% | ~1.6s | $0.3 |
+| qwen3.6 @ Ollama (self-hosted) | 95% | 95% | 89% | ~12.5s | ~$0 API |
+| gpt-4o | 90% | ~93% | 83% | ~1.8s | $3.3 |
+| glm-4-air | 85% | ~90% | 78% | ~5.0s | $0.1 |
+| gpt-4o-mini | 72.5% | ~80% | 67% | ~3.0s | $0.2 |
+
+*Adjusted = excluding fails attributed to matching artifacts rather than model errors.
+
+**Takeaways**: (1) On the saturated v1 12-question set, all five options scored 100% — system design (semantic layer + self-correction) matters more than model choice for routine queries. (2) The harder v2 set separates them: the flagship gpt-4o is beaten by deepseek-chat at 1/10th the cost, and the self-hosted model nearly matches the API leader — privacy costs ~6× latency, not accuracy. (3) Recurring genuine failure modes: `date_diff` argument-order reversal (caught both OpenAI models — negative durations silently bucketed wrong), multi-step aggregation grain errors, and reasoning-token exhaustion on a local thinking model. (4) Semantic-layer governance demonstrably lifts weak models: seeding a reference SQL template took glm-4-air on repeat-purchase-rate from 3 failed attempts to first-pass correct.
 
 ## Data
 
@@ -101,7 +105,7 @@ To use the real [Kaggle Olist dataset](https://www.kaggle.com/datasets/olistbr/b
 
 ## Roadmap
 
-- Extend eval set from 12 → 40 questions; add per-tier error analysis
+- Multi-run evaluation with variance analysis; questions that should be refused or clarified
 - Query result caching + few-shot retrieval from past correct SQL
 - Docker compose (app + Ollama) for one-command private deployment
 - Row-level access control on the warehouse

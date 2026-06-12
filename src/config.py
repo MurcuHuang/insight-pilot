@@ -30,4 +30,15 @@ PROVIDERS = {
         base_url="https://open.bigmodel.cn/api/paas/v4",
         api_key_env="ZHIPU_API_KEY", price_in=0.14, price_out=0.14),
     "gpt-4o": dict(  # optional: same-vendor tier comparison vs gpt-4o-mini
-        provider="openai", model="gpt-
+        provider="openai", model="gpt-4o", base_url=None,
+        api_key_env="OPENAI_API_KEY", price_in=2.50, price_out=10.00),
+    # Self-hosted option via Ollama — the "data stays on-prem" tier.
+    # Set `model` to exactly what `ollama list` shows on your machine.
+    "qwen3.6-local": dict(
+        provider="openai_compatible", model="qwen3.6:latest",
+        base_url="http://localhost:11434/v1",
+        api_key_env=None, price_in=0.0, price_out=0.0,
+        max_tokens=6000),  # thinking model: needs headroom for reasoning tokens
+}
+
+DEFAULT_MODEL = "gpt-4o-mini"

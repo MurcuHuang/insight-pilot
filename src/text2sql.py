@@ -77,4 +77,12 @@ def run(question: str, client, max_retries: int = 2) -> dict:
             continue
         if df.empty and not retried_empty:
             retried_empty = True
-            feedback = (f"\n\n### Previous attempt (retur
+            feedback = (f"\n\n### Previous attempt (returned 0 rows)\n```sql\n{sql}\n```\n"
+                        "Double-check filters, join keys, and date ranges. "
+                        "If the result should legitimately be empty, return the same query.")
+            continue
+        break
+
+    con.close()
+    return {"sql": sql, "df": df, "error": error, "attempts": attempts,
+            "latency_s": round(total_latency, 3), "cost_usd": round(total_cost, 6)}

@@ -24,6 +24,30 @@
     "gold_sql": "SELECT count(DISTINCT product_category_name) AS n_categories FROM products"
   },
   {
+    "id": "E5", "tier": "easy",
+    "question": "How many distinct sellers are there?",
+    "question_zh": "一共有多少个卖家?",
+    "gold_sql": "SELECT count(DISTINCT seller_id) AS n_sellers FROM sellers"
+  },
+  {
+    "id": "E6", "tier": "easy",
+    "question": "What is the total freight value across all order items (no status filter), rounded to 2 decimals?",
+    "question_zh": "所有订单条目的运费总额是多少(不过滤订单状态,保留2位小数)?",
+    "gold_sql": "SELECT round(sum(freight_value), 2) AS total_freight FROM order_items"
+  },
+  {
+    "id": "E7", "tier": "easy",
+    "question": "How many orders have been delivered?",
+    "question_zh": "已交付的订单有多少?",
+    "gold_sql": "SELECT count(*) AS delivered_orders FROM orders WHERE order_status = 'delivered'"
+  },
+  {
+    "id": "E8", "tier": "easy",
+    "question": "What is the average product weight in grams, rounded to 2 decimals?",
+    "question_zh": "商品平均重量是多少克(保留2位小数)?",
+    "gold_sql": "SELECT round(avg(product_weight_g), 2) AS avg_weight_g FROM products"
+  },
+  {
     "id": "M1", "tier": "medium",
     "question": "What is the monthly GMV trend in 2025?",
     "question_zh": "2025年每个月的GMV趋势是怎样的?",
@@ -48,6 +72,66 @@
     "gold_sql": "SELECT payment_type, round(sum(payment_value), 2) AS total_value FROM order_payments GROUP BY payment_type ORDER BY total_value DESC"
   },
   {
+    "id": "M5", "tier": "medium",
+    "question": "What is the average number of items per order, rounded to 2 decimals?",
+    "question_zh": "平均每笔订单包含多少个商品条目(保留2位小数)?",
+    "gold_sql": "SELECT round(count(*) * 1.0 / count(DISTINCT order_id), 2) AS avg_items_per_order FROM order_items"
+  },
+  {
+    "id": "M6", "tier": "medium",
+    "question": "What was the GMV in 2024 vs 2025, per the company GMV definition? Return two rows with columns yr and gmv (2 decimals).",
+    "question_zh": "按公司GMV口径,2024年和2025年的GMV分别是多少?返回两行,列为yr和gmv(保留2位小数)。",
+    "gold_sql": "SELECT year(o.order_purchase_timestamp) AS yr, round(sum(oi.price + oi.freight_value), 2) AS gmv FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.order_status <> 'canceled' GROUP BY 1 ORDER BY 1"
+  },
+  {
+    "id": "M7", "tier": "medium",
+    "question": "Which are the top 5 cities by number of distinct customers (people)? Return city and customer count.",
+    "question_zh": "按去重客户数(自然人)排名前5的城市是哪些?返回城市和客户数。",
+    "gold_sql": "SELECT customer_city, count(DISTINCT customer_unique_id) AS n_customers FROM customers GROUP BY 1 ORDER BY n_customers DESC LIMIT 5"
+  },
+  {
+    "id": "M8", "tier": "medium",
+    "question": "What is the median delivery time in days for delivered orders (days between purchase and customer delivery)?",
+    "question_zh": "已交付订单的配送时长中位数是多少天(从下单到送达客户)?",
+    "gold_sql": "SELECT median(date_diff('day', order_purchase_timestamp, order_delivered_customer_date)) AS median_delivery_days FROM orders WHERE order_status = 'delivered'"
+  },
+  {
+    "id": "M9", "tier": "medium",
+    "question": "What share of credit card payment value was paid in 6 or more installments? Express as a fraction rounded to 4 decimals.",
+    "question_zh": "信用卡支付金额中,分期数大于等于6期的占比是多少?用小数表示,保留4位。",
+    "gold_sql": "SELECT round(sum(CASE WHEN payment_installments >= 6 THEN payment_value ELSE 0 END) / sum(payment_value), 4) AS share_6plus FROM order_payments WHERE payment_type = 'credit_card'"
+  },
+  {
+    "id": "M10", "tier": "medium",
+    "question": "What is the overall freight ratio per the company definition (non-canceled orders)? Express as a fraction rounded to 4 decimals.",
+    "question_zh": "按公司口径,整体运费占比是多少(非取消订单)?用小数表示,保留4位。",
+    "gold_sql": "SELECT round(sum(oi.freight_value) / sum(oi.price), 4) AS freight_ratio FROM order_items oi JOIN orders o ON oi.order_id = o.order_id WHERE o.order_status <> 'canceled'"
+  },
+  {
+    "id": "M11", "tier": "medium",
+    "question": "How many monthly active customers were there in November 2025, per the company definition (distinct people with at least one non-canceled order)?",
+    "question_zh": "按公司口径,2025年11月的月活跃客户数是多少(至少有一笔非取消订单的去重自然人)?",
+    "gold_sql": "SELECT count(DISTINCT c.customer_unique_id) AS active_customers FROM orders o JOIN customers c ON o.customer_id = c.customer_id WHERE o.order_status <> 'canceled' AND o.order_purchase_timestamp >= '2025-11-01' AND o.order_purchase_timestamp < '2025-12-01'"
+  },
+  {
+    "id": "M12", "tier": "medium",
+    "question": "Which seller state has the most sellers? Return the state and the seller count (one row).",
+    "question_zh": "哪个州的卖家数量最多?返回州和卖家数(一行)。",
+    "gold_sql": "SELECT seller_state, count(*) AS n_sellers FROM sellers GROUP BY 1 ORDER BY n_sellers DESC LIMIT 1"
+  },
+  {
+    "id": "M13", "tier": "medium",
+    "question": "What is the average number of installments for credit card payments, rounded to 2 decimals?",
+    "question_zh": "信用卡支付的平均分期数是多少(保留2位小数)?",
+    "gold_sql": "SELECT round(avg(payment_installments), 2) AS avg_installments FROM order_payments WHERE payment_type = 'credit_card'"
+  },
+  {
+    "id": "M14", "tier": "medium",
+    "question": "How many orders placed in 2025 were canceled, and what fraction of all 2025 orders does that represent? Return columns n_canceled and cancel_rate (fraction, 4 decimals).",
+    "question_zh": "2025年下单的订单中有多少被取消,占2025年全部订单的比例是多少?返回n_canceled和cancel_rate两列(比例用小数表示,保留4位)。",
+    "gold_sql": "SELECT count(*) FILTER (WHERE order_status = 'canceled') AS n_canceled, round(count(*) FILTER (WHERE order_status = 'canceled') * 1.0 / count(*), 4) AS cancel_rate FROM orders WHERE order_purchase_timestamp >= '2025-01-01' AND order_purchase_timestamp < '2026-01-01'"
+  },
+  {
     "id": "H1", "tier": "hard",
     "question": "What is the repeat purchase rate across all time, expressed as a fraction (e.g. 0.28)? Return the rate only.",
     "question_zh": "全时段的复购率是多少?用小数表示(如0.28),只返回这个比率。",
@@ -68,4 +152,91 @@
   {
     "id": "H4", "tier": "hard",
     "question": "Which 3 customer states have the highest late delivery rate, considering only states with at least 100 delivered orders? Express the rate as a fraction rounded to 4 decimal places, and return state and rate only.",
-    "question_zh": "在至少有100个已交付订单的州中,延迟交
+    "question_zh": "在至少有100个已交付订单的州中,延迟交付率最高的3个州是哪些?比率用小数表示并保留4位,只返回州和比率两列。",
+    "gold_sql": "SELECT c.customer_state, round(avg(CASE WHEN o.order_delivered_customer_date > o.order_estimated_delivery_date THEN 1.0 ELSE 0.0 END), 4) AS late_rate FROM orders o JOIN customers c ON o.customer_id = c.customer_id WHERE o.order_status = 'delivered' GROUP BY 1 HAVING count(*) >= 100 ORDER BY late_rate DESC LIMIT 3"
+  },
+  {
+    "id": "H5", "tier": "hard",
+    "question": "What is the month-over-month GMV growth rate for each month of 2025 (per the company GMV definition)? Express growth as a fraction rounded to 4 decimals, exclude January (no prior month), and return columns month and mom_growth.",
+    "question_zh": "2025年各月GMV环比增长率是多少(按公司GMV口径)?增长率用小数表示保留4位,排除1月(无上月),返回month和mom_growth两列。",
+    "gold_sql": "WITH m AS (SELECT date_trunc('month', o.order_purchase_timestamp) AS month, sum(oi.price + oi.freight_value) AS gmv FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.order_status <> 'canceled' AND o.order_purchase_timestamp >= '2025-01-01' AND o.order_purchase_timestamp < '2026-01-01' GROUP BY 1) SELECT month, mom_growth FROM (SELECT month, round(gmv / lag(gmv) OVER (ORDER BY month) - 1, 4) AS mom_growth FROM m) t WHERE mom_growth IS NOT NULL ORDER BY month"
+  },
+  {
+    "id": "H6", "tier": "hard",
+    "question": "For each customer state, which single product category generates the highest item revenue (price only, non-canceled orders)? Return columns customer_state and product_category_name only, one row per state, ordered by state.",
+    "question_zh": "每个州收入最高的商品品类是什么(仅商品价格,非取消订单)?只返回customer_state和product_category_name两列,每州一行,按州排序。",
+    "gold_sql": "WITH cat_state AS (SELECT c.customer_state, p.product_category_name, sum(oi.price) AS rev FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN customers c ON o.customer_id = c.customer_id JOIN products p ON oi.product_id = p.product_id WHERE o.order_status <> 'canceled' GROUP BY 1, 2) SELECT customer_state, product_category_name FROM (SELECT *, row_number() OVER (PARTITION BY customer_state ORDER BY rev DESC) AS rn FROM cat_state) t WHERE rn = 1 ORDER BY customer_state"
+  },
+  {
+    "id": "H7", "tier": "hard",
+    "question": "Among customers (people) whose first order was placed in 2024, what fraction placed at least one additional order within 90 days of their first order? Express as a fraction rounded to 4 decimals, return the rate only.",
+    "question_zh": "首单发生在2024年的客户(自然人)中,有多少比例在首单后90天内又下了至少一单?用小数表示保留4位,只返回该比率。",
+    "gold_sql": "WITH firsts AS (SELECT c.customer_unique_id, min(o.order_purchase_timestamp) AS first_ts FROM orders o JOIN customers c ON o.customer_id = c.customer_id GROUP BY 1 HAVING min(o.order_purchase_timestamp) >= '2024-01-01' AND min(o.order_purchase_timestamp) < '2025-01-01'), rep AS (SELECT f.customer_unique_id, max(CASE WHEN o.order_purchase_timestamp > f.first_ts AND o.order_purchase_timestamp <= f.first_ts + INTERVAL 90 DAY THEN 1 ELSE 0 END) AS repurchased FROM firsts f JOIN customers c ON c.customer_unique_id = f.customer_unique_id JOIN orders o ON o.customer_id = c.customer_id GROUP BY 1) SELECT round(avg(repurchased), 4) AS rate_90d FROM rep"
+  },
+  {
+    "id": "H8", "tier": "hard",
+    "question": "What share of 2025 GMV comes from freight, per the company GMV definition? Express as a fraction rounded to 4 decimals, return the share only.",
+    "question_zh": "按公司GMV口径,2025年GMV中运费占多大比例?用小数表示保留4位,只返回该比例。",
+    "gold_sql": "SELECT round(sum(oi.freight_value) / sum(oi.price + oi.freight_value), 4) AS freight_share FROM order_items oi JOIN orders o ON oi.order_id = o.order_id WHERE o.order_status <> 'canceled' AND o.order_purchase_timestamp >= '2025-01-01' AND o.order_purchase_timestamp < '2026-01-01'"
+  },
+  {
+    "id": "H9", "tier": "hard",
+    "question": "What fraction of 2025 GMV came from November and December combined, per the company GMV definition? Express as a fraction rounded to 4 decimals, return the fraction only.",
+    "question_zh": "按公司GMV口径,2025年11月和12月合计贡献了全年GMV的多大比例?用小数表示保留4位,只返回该比例。",
+    "gold_sql": "SELECT round(sum(CASE WHEN month(o.order_purchase_timestamp) IN (11, 12) THEN oi.price + oi.freight_value ELSE 0 END) / sum(oi.price + oi.freight_value), 4) AS nov_dec_share FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.order_status <> 'canceled' AND o.order_purchase_timestamp >= '2025-01-01' AND o.order_purchase_timestamp < '2026-01-01'"
+  },
+  {
+    "id": "H10", "tier": "hard",
+    "question": "Compare the average order value (per the company GMV/AOV definition, all time) between repeat customers (people with 2+ non-canceled orders) and one-time customers. Return exactly two rows labeled 'repeat' and 'one_time', with columns customer_type and aov (2 decimals).",
+    "question_zh": "对比复购客户(2笔及以上非取消订单的自然人)与单次客户的客单价(按公司口径,全时段)。只返回两行,标签用'repeat'和'one_time',列为customer_type和aov(保留2位小数)。",
+    "gold_sql": "WITH pp AS (SELECT c.customer_unique_id, count(DISTINCT o.order_id) AS n FROM orders o JOIN customers c ON o.customer_id = c.customer_id WHERE o.order_status <> 'canceled' GROUP BY 1), o2 AS (SELECT o.order_id, CASE WHEN pp.n >= 2 THEN 'repeat' ELSE 'one_time' END AS customer_type FROM orders o JOIN customers c ON o.customer_id = c.customer_id JOIN pp ON pp.customer_unique_id = c.customer_unique_id WHERE o.order_status <> 'canceled') SELECT o2.customer_type, round(sum(oi.price + oi.freight_value) / count(DISTINCT o2.order_id), 2) AS aov FROM o2 JOIN order_items oi ON o2.order_id = oi.order_id GROUP BY 1 ORDER BY 1"
+  },
+  {
+    "id": "H11", "tier": "hard",
+    "question": "For delivered orders, what is the average review score by delivery duration bucket? Return ONE row with three columns: le_10 (10 days or less), d_11_20 (11-20 days), gt_20 (over 20 days), each rounded to 3 decimals.",
+    "question_zh": "已交付订单中,按配送时长分桶的平均评分是多少?只返回一行三列:le_10(10天及以内)、d_11_20(11-20天)、gt_20(20天以上),各保留3位小数。",
+    "gold_sql": "SELECT round(avg(CASE WHEN d <= 10 THEN review_score END), 3) AS le_10, round(avg(CASE WHEN d BETWEEN 11 AND 20 THEN review_score END), 3) AS d_11_20, round(avg(CASE WHEN d > 20 THEN review_score END), 3) AS gt_20 FROM (SELECT r.review_score, date_diff('day', o.order_purchase_timestamp, o.order_delivered_customer_date) AS d FROM orders o JOIN order_reviews r ON o.order_id = r.order_id WHERE o.order_status = 'delivered') t"
+  },
+  {
+    "id": "H12", "tier": "hard",
+    "question": "What fraction of total item revenue (price only, non-canceled orders) comes from the top 10 sellers by revenue? Express as a fraction rounded to 4 decimals, return the fraction only.",
+    "question_zh": "收入最高的前10个卖家贡献了商品总收入(仅价格,非取消订单)的多大比例?用小数表示保留4位,只返回该比例。",
+    "gold_sql": "WITH s AS (SELECT oi.seller_id, sum(oi.price) AS rev FROM order_items oi JOIN orders o ON oi.order_id = o.order_id WHERE o.order_status <> 'canceled' GROUP BY 1) SELECT round(sum(CASE WHEN rn <= 10 THEN rev ELSE 0 END) / sum(rev), 4) AS top10_share FROM (SELECT rev, row_number() OVER (ORDER BY rev DESC) AS rn FROM s) t"
+  },
+  {
+    "id": "H13", "tier": "hard",
+    "question": "What was the year-over-year GMV growth rate from 2024 to 2025, per the company GMV definition? Express as a fraction rounded to 4 decimals, return the rate only.",
+    "question_zh": "按公司GMV口径,2025年相对2024年的GMV同比增长率是多少?用小数表示保留4位,只返回该比率。",
+    "gold_sql": "SELECT round(sum(CASE WHEN year(o.order_purchase_timestamp) = 2025 THEN oi.price + oi.freight_value ELSE 0 END) / sum(CASE WHEN year(o.order_purchase_timestamp) = 2024 THEN oi.price + oi.freight_value ELSE 0 END) - 1, 4) AS yoy_growth FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.order_status <> 'canceled'"
+  },
+  {
+    "id": "H14", "tier": "hard",
+    "question": "What was the late delivery rate for each quarter of 2025 (delivered orders)? Express rates as fractions rounded to 4 decimals, return columns quarter and late_rate ordered by quarter.",
+    "question_zh": "2025年各季度的延迟交付率是多少(已交付订单)?比率用小数表示保留4位,返回quarter和late_rate两列,按季度排序。",
+    "gold_sql": "SELECT date_trunc('quarter', order_purchase_timestamp) AS quarter, round(avg(CASE WHEN order_delivered_customer_date > order_estimated_delivery_date THEN 1.0 ELSE 0.0 END), 4) AS late_rate FROM orders WHERE order_status = 'delivered' AND order_purchase_timestamp >= '2025-01-01' AND order_purchase_timestamp < '2026-01-01' GROUP BY 1 ORDER BY 1"
+  },
+  {
+    "id": "H15", "tier": "hard",
+    "question": "Which month of 2025 had the highest AOV (per the company AOV definition)? Return ONE row with columns month and aov (2 decimals).",
+    "question_zh": "2025年哪个月的客单价(按公司AOV口径)最高?只返回一行,列为month和aov(保留2位小数)。",
+    "gold_sql": "WITH m AS (SELECT date_trunc('month', o.order_purchase_timestamp) AS month, sum(oi.price + oi.freight_value) / count(DISTINCT o.order_id) AS aov FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.order_status <> 'canceled' AND o.order_purchase_timestamp >= '2025-01-01' AND o.order_purchase_timestamp < '2026-01-01' GROUP BY 1) SELECT month, round(aov, 2) AS aov FROM m ORDER BY aov DESC LIMIT 1"
+  },
+  {
+    "id": "H16", "tier": "hard",
+    "question": "Among multi-item orders (2 or more items), what fraction contain items from more than one product category? Express as a fraction rounded to 4 decimals, return the fraction only.",
+    "question_zh": "在包含2个及以上商品条目的订单中,跨多个品类的订单占比是多少?用小数表示保留4位,只返回该比例。",
+    "gold_sql": "WITH per_o AS (SELECT oi.order_id, count(*) AS n_items, count(DISTINCT p.product_category_name) AS n_cats FROM order_items oi JOIN products p ON oi.product_id = p.product_id GROUP BY 1) SELECT round(avg(CASE WHEN n_cats > 1 THEN 1.0 ELSE 0.0 END), 4) AS multi_cat_share FROM per_o WHERE n_items >= 2"
+  },
+  {
+    "id": "H17", "tier": "hard",
+    "question": "What is the 90th percentile of order value (total price + freight per order, non-canceled orders), rounded to 2 decimals? Return the value only.",
+    "question_zh": "订单金额(每单价格+运费合计,非取消订单)的90分位数是多少(保留2位小数)?只返回该数值。",
+    "gold_sql": "WITH ov AS (SELECT o.order_id, sum(oi.price + oi.freight_value) AS v FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.order_status <> 'canceled' GROUP BY 1) SELECT round(quantile_cont(v, 0.9), 2) AS p90_order_value FROM ov"
+  },
+  {
+    "id": "H18", "tier": "hard",
+    "question": "For each of the top 3 product categories by 2025 item revenue (price only, non-canceled), what is the late delivery rate among delivered orders containing at least one item of that category? Express rates as fractions rounded to 4 decimals; return columns product_category_name and late_rate only.",
+    "question_zh": "2025年商品收入(仅价格,非取消)前3的品类,各自的延迟交付率是多少(统计包含该品类至少一件商品的已交付订单)?比率用小数表示保留4位,只返回product_category_name和late_rate两列。",
+    "gold_sql": "WITH top3 AS (SELECT p.product_category_name AS cat FROM order_items oi JOIN products p ON oi.product_id = p.product_id JOIN orders o ON oi.order_id = o.order_id WHERE o.order_status <> 'canceled' AND o.order_purchase_timestamp >= '2025-01-01' AND o.order_purchase_timestamp < '2026-01-01' GROUP BY 1 ORDER BY sum(oi.price) DESC LIMIT 3), ord_cat AS (SELECT DISTINCT o.order_id, p.product_category_name AS cat, CASE WHEN o.order_delivered_customer_date > o.order_estimated_delivery_date THEN 1.0 ELSE 0.0 END AS late FROM orders o JOIN order_items oi ON o.order_id = oi.order_id JOIN products p ON oi.product_id = p.product_id WHERE o.order_status = 'delivered') SELECT t.cat AS product_category_name, round(avg(oc.late), 4) AS late_rate FROM top3 t JOIN ord_cat oc ON oc.cat = t.cat GROUP BY 1"
+  }
+]

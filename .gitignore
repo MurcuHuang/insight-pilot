@@ -7,4 +7,6 @@ data/*.duckdb
 data/chroma/
 logs/
 eval/results/
-.stre
+.streamlit/
+resume_bullets.md
+project_guide.md
